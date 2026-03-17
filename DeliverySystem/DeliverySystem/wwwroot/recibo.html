@@ -1,0 +1,118 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprovante de Pedido</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+
+        body {
+            font-family: 'Courier Prime', monospace;
+            background-color: #e5e7eb;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .receipt {
+            background: white;
+            width: 100%;
+            max-width: 350px;
+            padding: 20px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+            .receipt::after {
+                content: '';
+                position: absolute;
+                bottom: -10px;
+                left: 0;
+                right: 0;
+                border-top: 10px dashed white;
+                border-bottom: none;
+                z-index: 10;
+            }
+
+        .dashed-line {
+            border-bottom: 1px dashed #000;
+            margin: 15px 0;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="receipt text-gray-900" id="conteudo-recibo">
+        <div class="text-center mb-4">
+            <h1 class="text-2xl font-bold">MD CONFEITARIA</h1>
+            <p class="text-xs mt-1">Av. Principal, Centro - Catende/PE</p>
+            <p class="text-xs">CNPJ: 00.000.000/0001-00</p>
+        </div>
+
+        <div class="text-center bg-gray-100 p-2 font-bold mb-4">COMPROVANTE DIGITAL</div>
+
+        <div class="text-xs space-y-1 mb-4">
+            <p><strong>Pedido N°:</strong> <span id="r-id">Carregando...</span></p>
+            <p><strong>Data/Hora:</strong> <span id="r-data">...</span></p>
+            <p><strong>Cliente:</strong> <span id="r-cliente">...</span></p>
+            <p><strong>Destino:</strong> <span id="r-end">...</span></p>
+        </div>
+
+        <div class="dashed-line"></div>
+        <div class="font-bold text-sm mb-2">ITENS DO PEDIDO</div>
+        <div id="r-itens" class="mb-4"></div>
+        <div class="dashed-line"></div>
+
+        <div class="flex justify-between items-end mb-6">
+            <span class="font-bold text-sm">TOTAL PAGO</span>
+            <span class="font-black text-xl" id="r-total">R$ 0,00</span>
+        </div>
+
+        <div class="text-center text-xs text-gray-500 mt-6">
+            <p>Obrigado pela preferência!</p>
+            <p>Volte Sempre</p>
+        </div>
+    </div>
+
+    <script>
+        async function carregarRecibo() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            if(!id) { document.getElementById('conteudo-recibo').innerHTML = "<p class='text-center text-red-500'>ID do pedido não encontrado.</p>"; return; }
+
+            try {
+                const res = await fetch('/api/orders');
+                const pedidos = await res.json();
+                const p = pedidos.find(x => x.id == id);
+
+                if(!p) throw new Error("Pedido não existe");
+
+                document.getElementById('r-id').innerText = p.id.toString().padStart(5, '0');
+                document.getElementById('r-data').innerText = new Date(p.createdAt).toLocaleString('pt-BR');
+                document.getElementById('r-cliente').innerText = p.customerName || 'Cliente Balcão';
+                document.getElementById('r-end').innerText = p.customerAddress ? p.customerAddress.replace(/\[Mapa:.*?\]/,'') : 'Consumo no Local';
+                document.getElementById('r-total').innerText = 'R$ ' + p.totalAmount.toFixed(2).replace('.',',');
+
+                // Divide os itens (Ex: "2x Bolo de Chocolate | 1x Pizza")
+                const itensHtml = p.orderDetails.split(' | ').map(i => {
+                    return `<div class="item-row"><span>${i}</span></div>`;
+                }).join('');
+                document.getElementById('r-itens').innerHTML = itensHtml;
+
+            } catch (e) {
+                document.getElementById('conteudo-recibo').innerHTML = "<p class='text-center text-red-500 font-bold mt-10'>Recibo não encontrado ou expirado.</p>";
+            }
+        }
+        carregarRecibo();
+    </script>
+</body>
+</html>

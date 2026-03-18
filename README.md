@@ -31,3 +31,8 @@ Um sistema prático e eficiente focado no gerenciamento de pedidos e controle de
 1. Clone este repositório:
    ```bash
    git clone [https://github.com/JDS-2W/delivery-system.git](https://github.com/JDS-2W/delivery-system.git)
+## ✉️ Contato
+
+* **Instagram:** [JDS_2W](https://www.instagram.com/jds_2w/)
+* **linkedin:** [Jadson Alves](www.linkedin.com/in/jadson-alves-246808260)
+* **GitHub:** [JDS-2W](https://github.com/JDS-2W)
